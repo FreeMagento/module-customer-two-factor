@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="freemagento_twofactor_code" label="Customer Sign-In Code (Two-Factor)" file="code.html" type="html" module="FreeMagento_CustomerTwoFactor" area="frontend"/>
+</config>

@@ -1,0 +1,22 @@
+<!--@subject {{trans "%code is your %store_name sign-in code" code=$code store_name=$store.frontend_name}} @-->
+<!--@vars {
+"var code":"Sign-in Code",
+"var code_spaced":"Sign-in Code (spaced)",
+"var lifetime":"Code Lifetime (minutes)",
+"var customer_name":"Customer Name",
+"var customer_firstname":"Customer First Name",
+"var store.frontend_name":"Store Name"
+} @-->
+{{template config_path="design/email/header_template"}}
+
+<p class="greeting">{{trans "Hi %name," name=$customer_firstname}}</p>
+<p>{{trans "Here is your one-time code to finish signing in to %store_name:" store_name=$store.frontend_name}}</p>
+
+<p style="margin:24px 0;text-align:center;">
+    <span style="display:inline-block;padding:16px 28px;border:1px solid #d9d9d9;border-radius:4px;font-family:Menlo,Consolas,monospace;font-size:32px;letter-spacing:0.35em;font-weight:600;">{{var code_spaced}}</span>
+</p>
+
+<p>{{trans "The code is valid for %lifetime minutes and can only be used once." lifetime=$lifetime}}</p>
+<p>{{trans "If you didn't try to sign in, you can ignore this email - nobody can get into your account without this code. You may still want to change your password."}}</p>
+
+{{template config_path="design/email/footer_template"}}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <freemagento_twofactor>
+            <general>
+                <enabled>1</enabled>
+                <mode>optional</mode>
+            </general>
+            <code>
+                <lifetime>10</lifetime>
+                <max_attempts>5</max_attempts>
+                <resend_cooldown>60</resend_cooldown>
+                <email_template>freemagento_twofactor_code</email_template>
+                <email_identity>general</email_identity>
+            </code>
+            <trusted_device>
+                <enabled>1</enabled>
+                <lifetime>30</lifetime>
+                <checked_by_default>1</checked_by_default>
+            </trusted_device>
+        </freemagento_twofactor>
+    </default>
+</config>

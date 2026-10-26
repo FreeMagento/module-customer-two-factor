@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Intercept the password login: if the customer needs a second factor, hold the login and send a code -->
+    <type name="Magento\Customer\Controller\Account\LoginPost">
+        <plugin name="freemagento_twofactor_login_post" type="FreeMagento\CustomerTwoFactor\Plugin\LoginPostPlugin" sortOrder="100"/>
+    </type>
+    <!-- Clear any half-finished 2FA login when the session is logged out -->
+    <type name="Magento\Customer\Controller\Account\Logout">
+        <plugin name="freemagento_twofactor_logout" type="FreeMagento\CustomerTwoFactor\Plugin\LogoutPlugin" sortOrder="100"/>
+    </type>
+</config>

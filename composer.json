@@ -1,0 +1,44 @@
+{
+  "name": "freemagento/module-customer-two-factor",
+  "description": "Email one-time-code two-factor authentication for Magento 2 storefront customer accounts, with trusted devices. Hyvä-native (Alpine.js + Tailwind).",
+  "type": "magento2-module",
+  "license": "MIT",
+  "keywords": [
+    "magento2",
+    "hyva",
+    "two-factor",
+    "2fa",
+    "customer",
+    "security",
+    "otp"
+  ],
+  "homepage": "https://github.com/freemagento/module-customer-two-factor",
+  "support": {
+    "issues": "https://github.com/freemagento/module-customer-two-factor/issues",
+    "source": "https://github.com/freemagento/module-customer-two-factor"
+  },
+  "authors": [
+    {
+      "name": "FreeMagento (Mentalworkz Ltd)",
+      "email": "support@freemagento.co.uk",
+      "homepage": "https://freemagento.co.uk"
+    }
+  ],
+  "require": {
+    "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+    "magento/framework": "*",
+    "magento/module-customer": "*",
+    "magento/module-store": "*",
+    "magento/module-email": "*",
+    "magento/module-config": "*",
+    "freemagento/module-base": "^1.0"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "FreeMagento\\CustomerTwoFactor\\": ""
+    }
+  }
+}

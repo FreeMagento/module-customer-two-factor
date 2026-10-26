@@ -1,0 +1,159 @@
+<?php
+/**
+ * Second step of sign-in: enter the emailed one-time code.
+ *
+ * Block arguments a theme can set in layout to restyle without overriding the template:
+ *   section_css_classes  wrapper <section>      (default "py-10 lg:py-16")
+ *   title_css_classes    <h1>                   (default "text-3xl md:text-4xl font-medium")
+ *   card_css_classes     form container         (default "card")
+ *   muted_css_classes    secondary text         (default "text-secondary")
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp
+ */
+declare(strict_types=1);
+
+use FreeMagento\CustomerTwoFactor\ViewModel\Verify;
+
+/** @var Verify $vm */
+$vm = $block->getData('view_model');
+$uniqueId = uniqid('twofactor_', true);
+$codeLength = $vm->getCodeLength();
+$sectionClasses = (string)($block->getData('section_css_classes') ?: 'py-10 lg:py-16');
+$titleClasses = (string)($block->getData('title_css_classes') ?: 'text-3xl md:text-4xl font-medium');
+$cardClasses = (string)($block->getData('card_css_classes') ?: 'card');
+$muted = $escaper->escapeHtmlAttr((string)($block->getData('muted_css_classes') ?: 'text-secondary'));
+?>
+<script>
+    function initTwoFactorVerify(config) {
+        return {
+            code: '',
+            wait: config.resendWait,
+            timer: null,
+            init() {
+                if (this.wait > 0) {
+                    this.timer = setInterval(() => {
+                        this.wait -= 1;
+                        if (this.wait <= 0) { clearInterval(this.timer); this.wait = 0; }
+                    }, 1000);
+                }
+                this.$nextTick(() => this.$refs.code && this.$refs.code.focus());
+            },
+            onInput() {
+                this.code = this.code.replace(/\D+/g, '').slice(0, config.length);
+                if (this.code.length === config.length) {
+                    // full code typed or pasted - submit straight away
+                    this.$nextTick(() => this.$refs.form.requestSubmit());
+                }
+            },
+            onPaste(event) {
+                const text = (event.clipboardData || window.clipboardData).getData('text') || '';
+                const digits = text.replace(/\D+/g, '').slice(0, config.length);
+                if (digits) {
+                    event.preventDefault();
+                    this.code = digits;
+                    this.onInput();
+                }
+            }
+        }
+    }
+    window.addEventListener('alpine:init', () => Alpine.data('initTwoFactorVerify', initTwoFactorVerify), { once: true });
+</script>
+<?php $hyvaCsp->registerInlineScript() ?>
+
+<section id="<?= $escaper->escapeHtmlAttr($uniqueId) ?>"
+         class="mw-twofactor-verify <?= $escaper->escapeHtmlAttr($sectionClasses) ?>"
+         x-data="initTwoFactorVerify({ length: <?= (int)$codeLength ?>, resendWait: <?= (int)$vm->getResendWait() ?> })"
+>
+    <div class="mx-auto flex w-full max-w-md flex-col gap-8 px-4 sm:px-0">
+
+        <div class="text-center">
+            <h1 class="<?= $escaper->escapeHtmlAttr($titleClasses) ?>"><?= $escaper->escapeHtml(__('Check your email')) ?></h1>
+            <p class="mt-4 <?= $muted ?>">
+                <?= $escaper->escapeHtml(__('We sent a %1-digit sign-in code to', $codeLength)) ?>
+                <strong class="whitespace-nowrap"><?= $escaper->escapeHtml($vm->getMaskedEmail()) ?></strong>.
+                <?= $escaper->escapeHtml(__('It expires in %1 minutes.', $vm->getCodeLifetime())) ?>
+            </p>
+        </div>
+
+        <div class="<?= $escaper->escapeHtmlAttr($cardClasses) ?>">
+            <form id="<?= $escaper->escapeHtmlAttr($uniqueId) ?>-form"
+                  class="flex flex-col gap-6"
+                  method="post"
+                  action="<?= $escaper->escapeUrl($block->getUrl('twofactor/verify/post')) ?>"
+                  x-ref="form"
+            >
+                <?= $block->getBlockHtml('formkey') ?>
+
+                <div class="field required">
+                    <label for="<?= $escaper->escapeHtmlAttr($uniqueId) ?>-code" class="label">
+                        <?= $escaper->escapeHtml(__('Sign-in code')) ?>
+                    </label>
+                    <input id="<?= $escaper->escapeHtmlAttr($uniqueId) ?>-code"
+                           name="code"
+                           type="text"
+                           class="form-input w-full text-center text-2xl tracking-[0.5em]"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           autocomplete="one-time-code"
+                           maxlength="<?= (int)$codeLength ?>"
+                           required
+                           placeholder="<?= $escaper->escapeHtmlAttr(str_repeat('•', $codeLength)) ?>"
+                           x-ref="code"
+                           x-model="code"
+                           @input="onInput()"
+                           @paste="onPaste($event)"
+                           aria-describedby="<?= $escaper->escapeHtmlAttr($uniqueId) ?>-hint"
+                    >
+                    <p id="<?= $escaper->escapeHtmlAttr($uniqueId) ?>-hint" class="mt-2 text-sm <?= $muted ?>">
+                        <?= $escaper->escapeHtml(__("Can't see it? Check your junk folder.")) ?>
+                    </p>
+                </div>
+
+                <?php if ($vm->isRememberDeviceAvailable()): ?>
+                    <label class="flex items-start gap-3 text-sm">
+                        <input type="checkbox"
+                               name="remember_device"
+                               value="1"
+                               class="form-checkbox mt-0.5"
+                               <?= $vm->isRememberCheckedByDefault() ? 'checked' : '' ?>
+                        >
+                        <span>
+                            <?= $escaper->escapeHtml(__('Remember this device for %1 days', $vm->getTrustedDeviceLifetime())) ?>
+                            <span class="block <?= $muted ?>">
+                                <?= $escaper->escapeHtml(__("Don't tick this on a shared or public computer.")) ?>
+                            </span>
+                        </span>
+                    </label>
+                <?php endif; ?>
+
+                <button type="submit" class="btn btn-primary w-full">
+                    <?= $escaper->escapeHtml(__('Verify and sign in')) ?>
+                </button>
+            </form>
+        </div>
+
+        <div class="flex flex-col items-center gap-3 text-sm">
+            <form method="post" action="<?= $escaper->escapeUrl($block->getUrl('twofactor/verify/resend')) ?>">
+                <?= $block->getBlockHtml('formkey') ?>
+                <button type="submit"
+                        class="underline hover:no-underline disabled:no-underline disabled:opacity-60"
+                        :disabled="wait > 0"
+                >
+                    <span x-show="wait === 0"><?= $escaper->escapeHtml(__('Send a new code')) ?></span>
+                    <span x-show="wait > 0" x-cloak>
+                        <?= $escaper->escapeHtml(__('Send a new code in')) ?> <span x-text="wait"></span>s
+                    </span>
+                </button>
+            </form>
+            <form method="post" action="<?= $escaper->escapeUrl($block->getUrl('twofactor/verify/cancel')) ?>">
+                <?= $block->getBlockHtml('formkey') ?>
+                <button type="submit" class="<?= $muted ?> underline hover:no-underline">
+                    <?= $escaper->escapeHtml(__('Use a different account')) ?>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</section>
