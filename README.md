@@ -80,3 +80,4 @@ Email: `view/frontend/email/code.html` (vars: `code`, `code_spaced`, `lifetime`,
 MIT — free to use on any store, including client work. Issues and pull requests: https://github.com/freemagento/module-customer-two-factor
 
 Made by [FreeMagento](https://freemagento.co.uk), a Mentalworkz Ltd project.
+-
